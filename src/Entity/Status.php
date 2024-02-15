@@ -8,6 +8,7 @@ use App\Repository\StatusRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: StatusRepository::class)]
 #[ApiResource(
@@ -19,15 +20,23 @@ use Doctrine\ORM\Mapping as ORM;
 )]
 class Status
 {
+    const STATUS = [
+        'pending' => 'En attente de traitement',
+        'in_progress' =>'En cours',
+        'completed' => 'Résolu',
+        'rejected' => 'Rejeté',
+    ];
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['Ticket:Read'])]
     private ?string $title = null;
 
-    #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'status')]
+    #[ORM\OneToMany(mappedBy: 'status', targetEntity: Ticket::class)]
     private Collection $tickets;
 
     public function __construct()

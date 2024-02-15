@@ -46,7 +46,7 @@ class AccountRepository extends ServiceEntityRepository implements PasswordUpgra
         $account = new Account();
         $account
             ->setEmail($data['email'])
-            ->addRole(Account::ROLES['subscriber'])
+            ->addRole(Account::ROLES['client'])
             ->setPassword($data['password'])
             ->setProfile($profile)
             ;

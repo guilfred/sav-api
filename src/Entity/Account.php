@@ -11,7 +11,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 use ApiPlatform\Metadata\ApiResource;
-use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: AccountRepository::class)]
 #[ApiResource(
@@ -33,7 +33,7 @@ use Symfony\Component\Serializer\Attribute\Groups;
 class Account implements UserInterface, PasswordAuthenticatedUserInterface
 {
     const ROLES = [
-        'subscriber' => 'ROLE_SUBSCRIBER',
+        'client' => 'ROLE_CLIENT',
         'admin' => 'ROLE_ADMIN',
         'super_admin' => 'ROLE_SUPER_ADMIN'
     ];

@@ -7,7 +7,7 @@ use App\Repository\ProfileRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Component\Serializer\Attribute\Groups;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: ProfileRepository::class)]
 #[ApiResource]
@@ -19,11 +19,19 @@ class Profile
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['Account:Post:Write', 'Account:Post:Read'])]
+    #[Groups([
+        'Account:Post:Write',
+        'Account:Post:Read',
+        'Ticket:Read'
+    ])]
     private ?string $name = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['Account:Post:Write', 'Account:Post:Read'])]
+    #[Groups([
+        'Account:Post:Write',
+        'Account:Post:Read',
+        'Ticket:Read'
+    ])]
     private ?string $firstname = null;
 
     #[ORM\Column(length: 50, nullable: true)]
@@ -41,7 +49,7 @@ class Profile
     #[Groups(['Account:Post:Write', 'Account:Post:Read'])]
     private ?string $description = null;
 
-    #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'profile')]
+    #[ORM\OneToMany(mappedBy: 'profile', targetEntity: Ticket::class)]
     private Collection $tickets;
 
     #[ORM\OneToOne(inversedBy: 'profile', cascade: ['persist', 'remove'])]

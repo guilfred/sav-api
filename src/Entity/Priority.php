@@ -8,6 +8,7 @@ use App\Repository\PriorityRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
 
 #[ORM\Entity(repositoryClass: PriorityRepository::class)]
 #[ApiResource(
@@ -25,9 +26,10 @@ class Priority
     private ?int $id = null;
 
     #[ORM\Column(length: 100)]
+    #[Groups(['Ticket:Read'])]
     private ?string $title = null;
 
-    #[ORM\OneToMany(targetEntity: Ticket::class, mappedBy: 'priority')]
+    #[ORM\OneToMany(mappedBy: 'priority', targetEntity: Ticket::class)]
     private Collection $tickets;
 
     public function __construct()

@@ -3,12 +3,138 @@
 namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\GetCollection;
+use ApiPlatform\Metadata\Link;
+use ApiPlatform\Metadata\Patch;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Put;
+use App\Controller\Ticket\ArchivedController;
 use App\Repository\TicketRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Serializer\Annotation\Groups;
+use ApiPlatform\OpenApi\Model;
 
 #[ORM\Entity(repositoryClass: TicketRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    operations: [
+        new Post(
+            normalizationContext: ['groups' => ['Ticket:Read']],
+            denormalizationContext: ['groups' => ['Ticket:Write']],
+        ),
+        new Put(
+            normalizationContext: ['groups' => ['Ticket:Write']],
+            denormalizationContext: ['groups' => ['Ticket:Write']],
+        ),
+        new Get(
+            normalizationContext: ['groups' => ['Ticket:Read']],
+        ),
+        new Patch(
+            uriTemplate: '/tickets/{id}/archived',
+            controller: ArchivedController::class,
+            denormalizationContext: ['groups' => ['Ticket:Archived']],
+            read: false,
+            name: 'archived_ticket'
+        ),
+        new GetCollection(
+            normalizationContext: ['groups' => ['Ticket:Read']],
+        )
+    ]
+)]
+#[ApiResource(
+    uriTemplate: '/profiles/{id}/tickets',
+    operations: [
+        new GetCollection(
+            openapi: new Model\Operation(
+                summary: 'Retrieves the collection of Ticket resources by profile',
+                description: 'Retrieves the collection of Ticket resources by profile',
+            ),
+            normalizationContext: ['groups' => ['Ticket:Read']],
+        )
+    ],
+    uriVariables: [
+        'id' => new Link(fromProperty: 'tickets', fromClass: Profile::class)
+    ]
+)]
+#[ApiResource(
+    uriTemplate: '/profiles/{profileID}/ticket/{id}',
+    operations: [
+        new Get(
+            openapi: new Model\Operation(
+                summary: 'Retrieves a Ticket resources by profile',
+                description: 'Retrieves a Ticket resources by profile',
+            ),
+            normalizationContext: ['groups' => ['Ticket:Read']],
+        )
+    ],
+    uriVariables: [
+        'profileID' => new Link(fromProperty: 'tickets', fromClass: Profile::class),
+        'id' => new Link(fromClass: Ticket::class),
+    ]
+)]
+#[ApiResource(
+    uriTemplate: '/priorities/{id}/tickets',
+    operations: [
+        new GetCollection(
+            openapi: new Model\Operation(
+                summary: 'Retrieves the collection of Ticket resources by priority',
+                description: 'Retrieves the collection of Ticket resources by priority',
+            ),
+            normalizationContext: ['groups' => ['Ticket:Read']],
+        )
+    ],
+    uriVariables: [
+        'id' => new Link(fromProperty: 'tickets', fromClass: Priority::class)
+    ]
+)]
+#[ApiResource(
+    uriTemplate: '/statuses/{id}/tickets',
+    operations: [
+        new GetCollection(
+            openapi: new Model\Operation(
+                summary: 'Retrieves the collection of Ticket resources by status',
+                description: 'Retrieves the collection of Ticket resources by status',
+            ),
+            normalizationContext: ['groups' => ['Ticket:Read']],
+        )
+    ],
+    uriVariables: [
+        'id' => new Link(fromProperty: 'tickets', fromClass: Status::class)
+    ]
+)]
+#[ApiResource(
+    uriTemplate: '/tickets/{id}/status',
+    operations: [
+        new Patch(
+            openapi: new Model\Operation(
+                summary: 'Edit status of Ticket resources',
+                description: 'Edit status of Ticket resources',
+            ),
+            normalizationContext: ['groups' => ['Ticket:Read']],
+            denormalizationContext: ['groups' => ['Ticket:Edit:Status']],
+        )
+    ],
+    uriVariables: [
+        'id' => new Link(fromClass: Ticket::class)
+    ]
+)]
+#[ApiResource(
+    uriTemplate: '/tickets/{id}/priority',
+    operations: [
+        new Patch(
+            openapi: new Model\Operation(
+                summary: 'Edit priority of Ticket resources',
+                description: 'Edit priority of Ticket resources',
+            ),
+            normalizationContext: ['groups' => ['Ticket:Read']],
+            denormalizationContext: ['groups' => ['Ticket:Edit:Priority']],
+        )
+    ],
+    uriVariables: [
+        'id' => new Link(fromClass: Ticket::class)
+    ]
+)]
 class Ticket
 {
     #[ORM\Id]
@@ -17,32 +143,48 @@ class Ticket
     private ?int $id = null;
 
     #[ORM\Column(length: 255)]
+    #[Groups(['Ticket:Write', 'Ticket:Read'])]
     private ?string $title = null;
 
     #[ORM\Column(type: Types::TEXT)]
+    #[Groups(['Ticket:Write', 'Ticket:Read'])]
     private ?string $description = null;
 
     #[ORM\Column]
+    #[Groups(['Ticket:Read'])]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups(['Ticket:Read'])]
     private ?\DateTimeImmutable $endAt = null;
 
     #[ORM\ManyToOne(inversedBy: 'tickets')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['Ticket:Read', 'Ticket:Edit:Status'])]
     private ?Status $status = null;
 
     #[ORM\ManyToOne(inversedBy: 'tickets')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['Ticket:Write', 'Ticket:Read', 'Ticket:Edit:Priority'])]
     private ?Priority $priority = null;
 
     #[ORM\ManyToOne(inversedBy: 'tickets')]
     #[ORM\JoinColumn(nullable: false)]
+    #[Groups(['Ticket:Write', 'Ticket:Read'])]
     private ?Profile $profile = null;
 
+    #[ORM\Column]
+    #[Groups(['Ticket:Read', 'Ticket:Archived'])]
+    private ?bool $archived = null;
+
+    public function __construct()
+    {
+        $this->archived = false;
+        $this->createdAt = new \DateTimeImmutable();
+    }
     public function getId(): ?int
     {
         return $this->id;
@@ -140,6 +282,18 @@ class Ticket
     public function setProfile(?Profile $profile): static
     {
         $this->profile = $profile;
+
+        return $this;
+    }
+
+    public function isArchived(): ?bool
+    {
+        return $this->archived;
+    }
+
+    public function setArchived(bool $archived): static
+    {
+        $this->archived = $archived;
 
         return $this;
     }

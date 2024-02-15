@@ -8,15 +8,10 @@ use Doctrine\Persistence\ObjectManager;
 
 class StatusFixtures extends Fixture
 {
-    const STATUS = [
-        'En attente de traitement',
-        'En cours',
-        'Résolu',
-        'Rejeté',
-    ];
+
     public function load(ObjectManager $manager): void
     {
-        foreach (self::STATUS as $status) {
+        foreach (Status::STATUS as $status) {
             $s = new Status();
             $s->setTitle($status);
             $manager->persist($s);
