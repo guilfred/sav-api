@@ -6,6 +6,7 @@ use ApiPlatform\Metadata\Get;
 use ApiPlatform\Metadata\GetCollection;
 use ApiPlatform\Metadata\Post;
 use App\Controller\Security\CreateAccountController;
+use App\Controller\Security\MeController;
 use App\Repository\AccountRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
@@ -18,6 +19,14 @@ use Symfony\Component\Serializer\Annotation\Groups;
     operations: [
         new Get(
             normalizationContext: ['groups' => ['Account:Get:Read']],
+        ),
+        new Get(
+            uriTemplate: '/me',
+            controller: MeController::class,
+            normalizationContext: ['groups' => ['Account:Me']],
+            security: 'is_granted("IS_AUTHENTICATED_FULLY")',
+            read: false,
+            name: 'me'
         ),
         new GetCollection(),
         new Post(
@@ -44,7 +53,11 @@ class Account implements UserInterface, PasswordAuthenticatedUserInterface
     private ?int $id = null;
 
     #[ORM\Column(length: 180, unique: true)]
-    #[Groups(['Account:Post:Write', 'Account:Post:Read'])]
+    #[Groups([
+        'Account:Post:Write',
+        'Account:Post:Read',
+        'Account:Me'
+    ])]
     private ?string $email = null;
 
     #[ORM\Column]
@@ -61,10 +74,17 @@ class Account implements UserInterface, PasswordAuthenticatedUserInterface
     private ?bool $enabled = null;
 
     #[ORM\Column(nullable: true)]
+    #[Groups([
+        'Account:Me'
+    ])]
     private ?\DateTimeImmutable $lastLogin = null;
 
     #[ORM\OneToOne(mappedBy: 'account', cascade: ['persist', 'remove'])]
-    #[Groups(['Account:Post:Write', 'Account:Post:Read'])]
+    #[Groups([
+        'Account:Post:Write',
+        'Account:Post:Read',
+        'Account:Me'
+    ])]
     private ?Profile $profile = null;
 
     public function __construct()

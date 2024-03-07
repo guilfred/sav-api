@@ -22,7 +22,8 @@ class Profile
     #[Groups([
         'Account:Post:Write',
         'Account:Post:Read',
-        'Ticket:Read'
+        'Ticket:Read',
+        'Account:Me'
     ])]
     private ?string $name = null;
 
@@ -30,23 +31,36 @@ class Profile
     #[Groups([
         'Account:Post:Write',
         'Account:Post:Read',
-        'Ticket:Read'
+        'Ticket:Read',
+        'Account:Me'
     ])]
     private ?string $firstname = null;
 
     #[ORM\Column(length: 50, nullable: true)]
-    #[Groups(['Account:Post:Write', 'Account:Post:Read'])]
+    #[Groups([
+        'Account:Post:Write',
+        'Account:Post:Read',
+        'Account:Me'
+    ])]
     private ?string $tel = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column(length: 255)]
-    #[Groups(['Account:Post:Write', 'Account:Post:Read'])]
+    #[Groups([
+        'Account:Post:Write',
+        'Account:Post:Read',
+        'Account:Me'
+    ])]
     private ?string $society = null;
 
     #[ORM\Column(length: 255, nullable: true)]
-    #[Groups(['Account:Post:Write', 'Account:Post:Read'])]
+    #[Groups([
+        'Account:Post:Write',
+        'Account:Post:Read',
+        'Account:Me'
+    ])]
     private ?string $description = null;
 
     #[ORM\OneToMany(mappedBy: 'profile', targetEntity: Ticket::class)]
